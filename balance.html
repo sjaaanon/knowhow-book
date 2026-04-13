@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<!-- Knowhow Book — Balance detail -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balance — Knowhow Book</title>
+<style>
+@font-face{ font-family:'Paperlogy'; src:url('fonts/Paperlogy_7.woff2') format('woff2'); font-weight:400; font-style:normal; }
+@font-face{ font-family:'Paperlogy'; src:url('fonts/Paperlogy_8.woff2') format('woff2'); font-weight:500; font-style:normal; }
+@font-face{ font-family:'Paperlogy'; src:url('fonts/Paperlogy_9.woff2') format('woff2'); font-weight:700; font-style:normal; }
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+:root{
+  --bg:#ffffff;
+  --dark:#111;
+  --mid:#888;
+  --light:#bbb;
+  --border:#e0deda;
+  --mg:40px;
+  --r:12px;
+}
+
+body{
+  background:var(--bg);
+  color:var(--dark);
+  font-family:"mundial",sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── NAV ── */
+.nav{
+  position:fixed; top:0; left:0; right:0;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  padding:24px var(--mg) 0;
+  z-index:50;
+  pointer-events:none;
+}
+.nav > *{ pointer-events:all; }
+.nav-logo svg{ display:block; }
+.nav-right{
+  text-align:right;
+  font-family:'Paperlogy',sans-serif;
+  font-size:13px;
+  line-height:2.2;
+}
+.nav-active{
+  display:flex; align-items:center;
+  justify-content:flex-end; gap:8px;
+  font-weight:700; color:#0a0a0a;
+}
+.nav-active::before{ content:'—'; font-weight:400; }
+.nav-right a{
+  text-decoration:none; color:#aaa;
+  display:block; font-weight:400;
+  transition:color 0.2s;
+}
+.nav-right a:hover{ color:#0a0a0a; }
+
+/* ── HERO ── */
+.hero{
+  padding-top:80px;
+  display:flex; flex-direction:column;
+  align-items:center;
+  text-align:center;
+  overflow:visible;
+  position:relative;
+  z-index:50;
+}
+
+/* dropdown trigger */
+.title-wrap{
+  display:inline-flex; flex-direction:column;
+  align-items:center; gap:0;
+  cursor:pointer; position:relative;
+  overflow:visible;
+}
+.title-row{
+  display:flex; align-items:center;
+  justify-content:space-between;
+  width:420px;
+}
+.hero-title{
+  font-family:"mundial",sans-serif;
+  font-weight:300;
+  font-size:clamp(52px, 8vw, 96px);
+  letter-spacing:-0.03em;
+  line-height:0.92;
+  color:var(--dark);
+  text-transform:uppercase;
+}
+.hero-title-divider{
+  font-family:"mundial",sans-serif;
+  font-size:clamp(40px, 6vw, 72px);
+  color:var(--light);
+  font-weight:300;
+  line-height:0.92;
+  letter-spacing:-0.03em;
+}
+.hero-title-ko{
+  font-family:'Paperlogy',sans-serif;
+  font-size:clamp(20px, 3vw, 36px);
+  font-weight:400;
+  letter-spacing:0.01em;
+  color:var(--dark);
+  line-height:1;
+  opacity:0.75;
+}
+.drop-arrow{
+  width:22px; opacity:1;
+  transition:transform .25s;
+  flex-shrink:0;
+  margin-top:6px;
+}
+.title-wrap.open .drop-arrow{ transform:rotate(180deg); }
+.title-underline{
+  width:420px; height:2px;
+  background:var(--dark);
+  margin-top:10px;
+  position:relative; z-index:101;
+}
+.hero-sub{ display:none; }
+
+/* dropdown menu */
+.dropdown{
+  position:fixed;
+  background:#fff;
+  border:2px solid var(--dark);
+  border-top:none;
+  border-radius:0;
+  overflow:hidden;
+  min-width:420px;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s;
+  z-index:300;
+  transform:translateX(-50%);
+}
+.dropdown.open{
+  opacity:1; pointer-events:all;
+}
+.dropdown-item{
+  display:flex; align-items:center;
+  justify-content:space-between;
+  padding:18px 32px;
+  cursor:pointer;
+  transition:background .15s;
+  border-bottom:1px solid var(--border);
+  position:relative;
+  gap:16px;
+}
+.dropdown-item:last-child{ border-bottom:none; }
+.dropdown-item:hover{ background:#f7f7f7; }
+.dropdown-item.current{ background:transparent; }
+
+/* hover line between EN and KO */
+.dropdown-item::after{
+  content:'';
+  position:absolute;
+  left:50%; right:50%;
+  top:50%; transform:translateY(-50%);
+  height:1px;
+  background:var(--dark);
+  transition:left .3s ease, right .3s ease;
+  opacity:0;
+}
+.dropdown-item:hover::after{
+  left:calc(32px + var(--en-w, 160px) + 16px);
+  right:calc(32px + var(--ko-w, 40px) + 16px);
+  opacity:0.2;
+}
+
+.dropdown-item-en{
+  font-family:"mundial",sans-serif;
+  font-weight:300;
+  font-size:26px; letter-spacing:-0.02em;
+  color:var(--dark); line-height:1;
+  text-transform:uppercase;
+  flex-shrink:0;
+}
+.dropdown-item-ko{
+  font-size:13px; color:#999;
+  font-weight:700;
+  letter-spacing:0.04em;
+  flex-shrink:0;
+}
+.dropdown-item-line{
+  flex:1;
+  height:1px;
+  background:var(--dark);
+  opacity:0;
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:opacity .25s, transform .35s ease;
+}
+.dropdown-item:hover .dropdown-item-line{
+  opacity:0.15;
+  transform:scaleX(1);
+}
+.dropdown-badge{
+  font-size:9px; letter-spacing:0.1em;
+  border:1px solid var(--border);
+  border-radius:3px; padding:3px 8px;
+  color:var(--mid); align-self:center;
+}
+
+/* ── PILL TABS ── */
+.tabs{
+  display:flex; flex-wrap:wrap;
+  justify-content:center; gap:6px;
+  padding:24px var(--mg) 0;
+}
+.tab{
+  font-size:11px; font-weight:400;
+  letter-spacing:0.06em;
+  padding:6px 18px;
+  border-radius:30px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--mid);
+  cursor:pointer;
+  transition:all .2s;
+  font-family:'Paperlogy',sans-serif;
+}
+.tab:hover{ border-color:var(--dark); color:var(--dark); }
+.tab.active{
+  background:var(--dark); color:#fff;
+  border-color:var(--dark); font-weight:500;
+}
+
+/* ── TYPE INFO ── */
+.type-info{
+  padding:28px var(--mg) 0;
+  display:flex; flex-direction:column;
+  align-items:center; gap:14px;
+  text-align:center;
+  transition:opacity .2s;
+}
+.type-icon{
+  width:56px; height:56px;
+  display:flex; align-items:center; justify-content:center;
+}
+.type-icon svg{ width:100%; height:100%; }
+.type-desc{
+  font-size:12px; line-height:2;
+  color:var(--mid); font-weight:300;
+  max-width:600px; word-break:keep-all;
+}
+.type-desc strong{ color:var(--dark); font-weight:500; }
+
+/* ── IMAGE GRID ── */
+.grid-section{ padding:28px 0 60px; }
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:3px;
+  margin:0 var(--mg);
+}
+.grid-item{
+  position:relative; overflow:hidden;
+  aspect-ratio:3/4;
+  background:#e8e5df;
+  cursor:pointer;
+  border-radius:0;
+}
+
+/* placeholder SVG visuals */
+.grid-item svg{
+  width:100%; height:100%;
+  position:absolute; inset:0;
+  display:block;
+  object-fit:cover;
+  transition:transform .4s cubic-bezier(.4,0,.2,1);
+}
+.grid-item:hover svg{ transform:scale(1.04); }
+
+/* hover dim */
+.grid-item::after{
+  content:'';
+  position:absolute; inset:0;
+  background:rgba(17,17,17,0);
+  transition:background .3s;
+  z-index:1;
+}
+.grid-item:hover::after{ background:rgba(17,17,17,0.28); }
+
+/* hover label */
+.grid-item-hover{
+  position:absolute; bottom:0; left:0; right:0;
+  z-index:2;
+  padding:32px 14px 14px;
+  background:linear-gradient(to top, rgba(17,17,17,0.7) 0%, transparent 100%);
+  display:flex; flex-direction:column; gap:3px;
+  transform:translateY(6px);
+  opacity:0;
+  transition:opacity .25s, transform .25s;
+}
+.grid-item:hover .grid-item-hover{
+  opacity:1; transform:translateY(0);
+}
+.grid-item-hover-title{
+  font-size:11px; font-weight:500;
+  color:#fff; letter-spacing:0.02em;
+}
+.grid-item-hover-code{
+  font-size:9px; color:rgba(255,255,255,0.5);
+  letter-spacing:0.14em; text-transform:uppercase;
+}
+
+/* ── MODAL ── */
+.modal-bg{
+  position:fixed; inset:0;
+  background:#fff;
+  z-index:200;
+  overflow-y:auto;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s;
+}
+.modal-bg.open{ opacity:1; pointer-events:all; }
+
+.modal{
+  min-height:100vh;
+  display:flex; flex-direction:column;
+  position:relative;
+  padding:60px var(--mg) 80px;
+  max-width:1200px;
+  margin:0 auto;
+  transform:translateY(16px);
+  transition:transform .35s cubic-bezier(.4,0,.2,1);
+}
+.modal-bg.open .modal{ transform:translateY(0); }
+
+/* close — fixed top right */
+.modal-close{
+  position:fixed; top:20px; right:24px;
+  width:40px; height:40px;
+  background:var(--dark); border:none;
+  border-radius:8px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff;
+  transition:background .2s, transform .15s;
+  z-index:300;
+}
+.modal-close:hover{ background:#333; transform:scale(1.05); }
+
+/* main: 6:4 */
+.modal-main{
+  display:grid;
+  grid-template-columns:6fr 4fr;
+  gap:60px;
+  align-items:flex-start;
+  margin-bottom:64px;
+}
+
+/* left: image */
+.modal-img{
+  position:relative;
+  border-radius:0;
+  overflow:hidden;
+  aspect-ratio:3/4;
+}
+.modal-img-inner{
+  position:absolute; inset:0;
+  transition:background .3s;
+}
+
+/* right: info */
+.modal-info{
+  padding-top:12px;
+  display:flex; flex-direction:column;
+  gap:0;
+}
+.modal-badge{
+  font-size:9px; letter-spacing:0.2em;
+  text-transform:uppercase; color:var(--light);
+  margin-bottom:16px;
+}
+.modal-title{
+  font-family:"mundial",sans-serif;
+  font-weight:300;
+  font-size:clamp(36px,4vw,56px);
+  letter-spacing:-0.03em;
+  text-transform:uppercase;
+  line-height:0.95; color:var(--dark);
+  margin-bottom:6px;
+}
+.modal-sub{
+  font-size:12px; color:var(--mid);
+  font-weight:300; letter-spacing:0.06em;
+  margin-bottom:28px;
+}
+.modal-divider{
+  width:32px; height:1px;
+  background:var(--border);
+  margin-bottom:24px;
+}
+.modal-tags{
+  display:flex; flex-wrap:wrap; gap:6px;
+}
+.modal-tag{
+  font-size:9px; letter-spacing:0.12em;
+  border:1px solid var(--border);
+  padding:5px 12px; color:var(--mid);
+  border-radius:3px; text-transform:uppercase;
+}
+
+/* bottom: related section */
+.modal-related-title{
+  font-family:"mundial",sans-serif;
+  font-weight:300;
+  font-size:clamp(32px, 4vw, 52px);
+  letter-spacing:-0.03em;
+  text-transform:uppercase;
+  line-height:0.95;
+  color:var(--dark);
+  margin-bottom:24px;
+  transition:opacity .2s;
+}
+
+.modal-thumbs{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+  gap:8px;
+}
+.thumb{
+  border-radius:0;
+  cursor:pointer;
+  overflow:hidden;
+  border:2px solid transparent;
+  transition:border-color .2s, transform .25s;
+  aspect-ratio:3/4;
+  position:relative;
+}
+.thumb:hover{ transform:translateY(-3px); }
+.thumb.active{ border-color:var(--dark); }
+.thumb-img{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  transition:transform .35s;
+}
+.thumb:hover .thumb-img{ transform:scale(1.05); }
+
+/* thumb hover overlay */
+.thumb::after{
+  content:'';
+  position:absolute; inset:0;
+  background:rgba(17,17,17,0);
+  transition:background .25s;
+  z-index:1;
+}
+.thumb:hover::after{ background:rgba(17,17,17,0.3); }
+.thumb-hover-label{
+  position:absolute; bottom:0; left:0; right:0;
+  z-index:2;
+  padding:24px 10px 10px;
+  background:linear-gradient(to top, rgba(17,17,17,0.65) 0%, transparent 100%);
+  opacity:0; transform:translateY(4px);
+  transition:opacity .25s, transform .25s;
+}
+.thumb:hover .thumb-hover-label{
+  opacity:1; transform:translateY(0);
+}
+.thumb-hover-title{
+  font-size:10px; font-weight:500;
+  color:#fff; letter-spacing:0.02em;
+  line-height:1.3;
+}
+.thumb-hover-code{
+  font-size:8px; color:rgba(255,255,255,0.5);
+  letter-spacing:0.12em; text-transform:uppercase;
+  margin-top:2px;
+}
+
+/* ── FADE ANIM ── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.fade-up{ animation:fadeUp .3s ease forwards; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="Knowhowbook.html" style="text-decoration:none;">
+    <svg width="30" height="30" viewBox="0 0 55 55" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,0v17h51V0H0ZM0,36h34v-17H0v17ZM0,55h17v-17H0v17Z" fill="#0a0a0a" fill-rule="evenodd"></path>
+    </svg>
+  </a>
+  <div class="nav-right">
+    <div class="nav-active">노하우북</div>
+    <a href="#">체크리스트</a>
+    <a href="#">관리자</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="title-wrap" id="titleWrap">
+    <div class="title-row">
+      <h1 class="hero-title">BALANCE</h1>
+      <svg class="drop-arrow" viewBox="0 0 14 8" fill="none">
+        <path d="M1 1l6 6 6-6" stroke="#111" stroke-width="1.5" stroke-linecap="round"></path>
+      </svg>
+    </div>
+    <div class="title-underline" id="titleUnderline"></div>
+    <div class="hero-sub"></div>
+  </div>
+</div>
+
+<!-- DROPDOWN — body level -->
+<div class="dropdown" id="dropdown">
+  <div class="dropdown-item current">
+    <div class="dropdown-item-en">BALANCE</div>
+    <div class="dropdown-item-line"></div>
+    <div class="dropdown-item-ko">균형</div>
+  </div>
+  <div class="dropdown-item">
+    <div class="dropdown-item-en">EMPHASIS</div>
+    <div class="dropdown-item-line"></div>
+    <div class="dropdown-item-ko">강조</div>
+    <div class="dropdown-badge">준비중</div>
+  </div>
+  <div class="dropdown-item">
+    <div class="dropdown-item-en">CONTRAST</div>
+    <div class="dropdown-item-line"></div>
+    <div class="dropdown-item-ko">대비</div>
+    <div class="dropdown-badge">준비중</div>
+  </div>
+  <div class="dropdown-item">
+    <div class="dropdown-item-en">PROPORTION</div>
+    <div class="dropdown-item-line"></div>
+    <div class="dropdown-item-ko">비율</div>
+    <div class="dropdown-badge">준비중</div>
+  </div>
+  <div class="dropdown-item">
+    <div class="dropdown-item-en">RHYTHM</div>
+    <div class="dropdown-item-line"></div>
+    <div class="dropdown-item-ko">리듬</div>
+    <div class="dropdown-badge">준비중</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs" id="tabs"></div>
+
+<!-- TYPE INFO -->
+<div class="type-info fade-up" id="typeInfo"></div>
+
+<!-- GRID -->
+<div class="grid-section">
+  <div class="grid fade-up" id="grid"><div class="grid-item" style="background: rgb(222, 218, 212);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">건축의 대칭</div>
+        <div class="grid-item-hover-code">BAL-01-A</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(210, 206, 200);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">로고 대칭</div>
+        <div class="grid-item-hover-code">BAL-01-B</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(202, 198, 192);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">정면 구도</div>
+        <div class="grid-item-hover-code">BAL-01-C</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(216, 212, 206);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">거울 반사</div>
+        <div class="grid-item-hover-code">BAL-01-D</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(200, 196, 190);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">타이포 대칭</div>
+        <div class="grid-item-hover-code">BAL-01-E</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(222, 218, 212);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">자연의 대칭</div>
+        <div class="grid-item-hover-code">BAL-01-F</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(208, 204, 198);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">패턴 대칭</div>
+        <div class="grid-item-hover-code">BAL-01-G</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(196, 192, 186);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">신체의 대칭</div>
+        <div class="grid-item-hover-code">BAL-01-H</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(212, 208, 202);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">매거진 레이아웃</div>
+        <div class="grid-item-hover-code">BAL-02-A</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(204, 200, 194);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">포스터 비대칭</div>
+        <div class="grid-item-hover-code">BAL-02-B</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(222, 218, 212);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">웹 그리드</div>
+        <div class="grid-item-hover-code">BAL-02-C</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(200, 196, 190);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">사진 구도</div>
+        <div class="grid-item-hover-code">BAL-02-D</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(208, 204, 198);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">타이포 무게</div>
+        <div class="grid-item-hover-code">BAL-02-E</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(196, 192, 186);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">인테리어</div>
+        <div class="grid-item-hover-code">BAL-02-F</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(216, 212, 206);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">네거티브 스페이스</div>
+        <div class="grid-item-hover-code">BAL-02-G</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(202, 198, 192);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">컬러 무게감</div>
+        <div class="grid-item-hover-code">BAL-02-H</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(204, 200, 194);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">만다라 패턴</div>
+        <div class="grid-item-hover-code">BAL-03-A</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(212, 208, 202);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">꽃의 구조</div>
+        <div class="grid-item-hover-code">BAL-03-B</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(222, 218, 212);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">시계 디자인</div>
+        <div class="grid-item-hover-code">BAL-03-C</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(200, 196, 190);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">건축 돔</div>
+        <div class="grid-item-hover-code">BAL-03-D</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(208, 204, 198);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">바퀴 패턴</div>
+        <div class="grid-item-hover-code">BAL-03-E</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(202, 198, 192);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">로고 방사형</div>
+        <div class="grid-item-hover-code">BAL-03-F</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(216, 212, 206);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">파문</div>
+        <div class="grid-item-hover-code">BAL-03-G</div>
+      </div>
+    </div><div class="grid-item" style="background: rgb(196, 192, 186);">
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">빛의 확산</div>
+        <div class="grid-item-hover-code">BAL-03-H</div>
+      </div>
+    </div></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+  <button class="modal-close" id="modalClose">✕</button>
+  <div class="modal" id="modal">
+
+    <!-- top: 6:4 image + info -->
+    <div class="modal-main">
+      <div class="modal-img">
+        <div class="modal-img-inner" id="modalImgInner"></div>
+      </div>
+      <div class="modal-info">
+        <div class="modal-badge" id="modalBadge"></div>
+        <div class="modal-title" id="modalTitle"></div>
+        <div class="modal-sub" id="modalSub"></div>
+        <div class="modal-divider"></div>
+        <div class="modal-tags" id="modalTags"></div>
+      </div>
+    </div>
+
+    <!-- bottom: related thumbnails -->
+    <div class="modal-related-title" id="modalRelatedTitle"></div>
+    <div class="modal-thumbs" id="modalThumbs"></div>
+
+  </div>
+</div>
+
+<script>
+/* ── SVG GENERATORS ── */
+function solidBg(w, h, shade){
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><rect width="${w}" height="${h}" fill="${shade}"/></svg>`;
+}
+
+const SHADES = [
+  '#dedad4','#d4d0ca','#ccc8c2','#c4c0ba',
+  '#bcb8b2','#b8b4ae','#c8c4be','#d0ccc6'
+];
+
+/* ── DATA ── */
+const TYPES = [
+  {
+    id:0, name:'대칭', nameEn:'Symmetrical',
+    icon:`<svg viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="28" y1="2" x2="28" y2="46" stroke="#888" stroke-width="0.8" stroke-dasharray="3 2"/>
+      <rect x="3" y="10" width="19" height="15" rx="2" fill="none" stroke="#888" stroke-width="1"/>
+      <rect x="34" y="10" width="19" height="15" rx="2" fill="none" stroke="#888" stroke-width="1"/>
+      <rect x="7" y="30" width="10" height="10" rx="1.5" fill="none" stroke="#888" stroke-width="1"/>
+      <rect x="39" y="30" width="10" height="10" rx="1.5" fill="none" stroke="#888" stroke-width="1"/>
+    </svg>`,
+    desc:'<strong>좌우 또는 상하가 거울처럼 같은 구조</strong>를 가진 균형이다. 격식 있고 신뢰감 있는 인상을 전달하며 건축, 로고, 명함 디자인에서 흔히 사용된다.',
+    keywords:['대칭','안정','격식','신뢰'],
+    images:[
+      {code:'BAL-01-A',title:'건축의 대칭',shade:'#dedad4'},
+      {code:'BAL-01-B',title:'로고 대칭',shade:'#d2cec8'},
+      {code:'BAL-01-C',title:'정면 구도',shade:'#cac6c0'},
+      {code:'BAL-01-D',title:'거울 반사',shade:'#d8d4ce'},
+      {code:'BAL-01-E',title:'타이포 대칭',shade:'#c8c4be'},
+      {code:'BAL-01-F',title:'자연의 대칭',shade:'#dedad4'},
+      {code:'BAL-01-G',title:'패턴 대칭',shade:'#d0ccc6'},
+      {code:'BAL-01-H',title:'신체의 대칭',shade:'#c4c0ba'},
+    ]
+  },
+  {
+    id:1, name:'비대칭', nameEn:'Asymmetrical',
+    icon:`<svg viewBox="0 0 56 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="6" width="22" height="36" rx="2" fill="none" stroke="#888" stroke-width="1"/>
+      <rect x="30" y="12" width="12" height="12" rx="1.5" fill="none" stroke="#888" stroke-width="1"/>
+      <rect x="30" y="28" width="23" height="10" rx="1.5" fill="none" stroke="#888" stroke-width="1"/>
+    </svg>`,
+    desc:'<strong>좌우가 같지 않지만 시각적 무게가 균형을 이루는</strong> 방식이다. 큰 요소 하나와 작은 요소 여러 개로 균형을 만들며 현대적이고 역동적인 느낌을 전달한다.',
+    keywords:['비대칭','역동','현대적','무게감'],
+    images:[
+      {code:'BAL-02-A',title:'매거진 레이아웃',shade:'#d4d0ca'},
+      {code:'BAL-02-B',title:'포스터 비대칭',shade:'#ccc8c2'},
+      {code:'BAL-02-C',title:'웹 그리드',shade:'#dedad4'},
+      {code:'BAL-02-D',title:'사진 구도',shade:'#c8c4be'},
+      {code:'BAL-02-E',title:'타이포 무게',shade:'#d0ccc6'},
+      {code:'BAL-02-F',title:'인테리어',shade:'#c4c0ba'},
+      {code:'BAL-02-G',title:'네거티브 스페이스',shade:'#d8d4ce'},
+      {code:'BAL-02-H',title:'컬러 무게감',shade:'#cac6c0'},
+    ]
+  },
+  {
+    id:2, name:'방사형', nameEn:'Radial',
+    icon:`<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="28" cy="28" r="22" stroke="#888" stroke-width="0.8" opacity="0.4"/>
+      <line x1="28" y1="6" x2="28" y2="28" stroke="#888" stroke-width="1"/>
+      <line x1="28" y1="28" x2="44" y2="38" stroke="#888" stroke-width="1"/>
+      <line x1="28" y1="28" x2="12" y2="38" stroke="#888" stroke-width="1"/>
+      <line x1="28" y1="28" x2="28" y2="50" stroke="#888" stroke-width="1"/>
+      <line x1="28" y1="28" x2="6" y2="18" stroke="#888" stroke-width="1" opacity="0.4"/>
+      <line x1="28" y1="28" x2="50" y2="18" stroke="#888" stroke-width="1" opacity="0.4"/>
+      <circle cx="28" cy="28" r="4" fill="none" stroke="#888" stroke-width="1"/>
+    </svg>`,
+    desc:'<strong>중심점에서 바깥으로 퍼져나가는 방식</strong>의 균형이다. 자연의 꽃, 만다라, 시계 등에서 볼 수 있으며 강한 구심력과 통일감을 만들어낸다.',
+    keywords:['방사','중심','원형','구심력'],
+    images:[
+      {code:'BAL-03-A',title:'만다라 패턴',shade:'#ccc8c2'},
+      {code:'BAL-03-B',title:'꽃의 구조',shade:'#d4d0ca'},
+      {code:'BAL-03-C',title:'시계 디자인',shade:'#dedad4'},
+      {code:'BAL-03-D',title:'건축 돔',shade:'#c8c4be'},
+      {code:'BAL-03-E',title:'바퀴 패턴',shade:'#d0ccc6'},
+      {code:'BAL-03-F',title:'로고 방사형',shade:'#cac6c0'},
+      {code:'BAL-03-G',title:'파문',shade:'#d8d4ce'},
+      {code:'BAL-03-H',title:'빛의 확산',shade:'#c4c0ba'},
+    ]
+  }
+];
+
+/* ── STATE ── */
+let currentType = 0;
+let currentImg = null;
+
+/* ── ALL DATA flat list ── */
+function getAllImages(){
+  const result = [];
+  TYPES.forEach(t => {
+    t.images.forEach((img, idx) => {
+      result.push({ img, idx, type: t });
+    });
+  });
+  return result;
+}
+
+/* ── BUILD TABS ── */
+const tabsEl = document.getElementById('tabs');
+
+const allTab = document.createElement('button');
+allTab.className = 'tab active';
+allTab.textContent = '전체';
+allTab.addEventListener('click', () => selectAll());
+tabsEl.appendChild(allTab);
+
+TYPES.forEach((t,i) => {
+  const el = document.createElement('button');
+  el.className = 'tab';
+  el.textContent = t.name;
+  el.addEventListener('click', () => selectType(i));
+  tabsEl.appendChild(el);
+});
+
+function setActiveTab(idx){
+  document.querySelectorAll('.tab').forEach((el, i) => {
+    el.classList.toggle('active', i === idx + 1);
+  });
+}
+
+/* ── TYPE INFO ── */
+function renderTypeInfo(t){
+  const el = document.getElementById('typeInfo');
+  el.classList.remove('fade-up');
+  void el.offsetWidth;
+  el.classList.add('fade-up');
+  el.innerHTML = `
+    <div class="type-icon">${t.icon}</div>
+    <div class="type-desc">${t.desc}</div>
+  `;
+}
+
+function clearTypeInfo(){
+  const el = document.getElementById('typeInfo');
+  el.classList.remove('fade-up');
+  void el.offsetWidth;
+  el.classList.add('fade-up');
+  el.innerHTML = '';
+}
+
+/* ── GRID ── */
+function renderGrid(entries){
+  // entries: [{img, idx, type}]
+  const grid = document.getElementById('grid');
+  grid.classList.remove('fade-up');
+  void grid.offsetWidth;
+  grid.classList.add('fade-up');
+  grid.innerHTML = '';
+  entries.forEach(({ img, idx, type }) => {
+    const el = document.createElement('div');
+    el.className = 'grid-item';
+    el.style.background = img.shade;
+    el.innerHTML = `
+      <div class="grid-item-hover">
+        <div class="grid-item-hover-title">${img.title}</div>
+        <div class="grid-item-hover-code">${img.code}</div>
+      </div>
+    `;
+    el.addEventListener('click', () => openModal(type, idx));
+    grid.appendChild(el);
+  });
+}
+
+/* ── SELECT ALL ── */
+function selectAll(){
+  setActiveTab(-1);
+  clearTypeInfo();
+  renderGrid(getAllImages());
+}
+
+/* ── SELECT TYPE ── */
+function selectType(i){
+  currentType = i;
+  setActiveTab(i);
+  renderTypeInfo(TYPES[i]);
+  const entries = TYPES[i].images.map((img, idx) => ({ img, idx, type: TYPES[i] }));
+  renderGrid(entries);
+}
+
+/* ── MODAL ── */
+function openModal(t, idx){
+  currentImg = idx;
+  renderModalContent(t, idx);
+  document.getElementById('modalBg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function renderModalContent(t, idx){
+  const img = t.images[idx];
+
+  // big image
+  document.getElementById('modalImgInner').style.background = img.shade;
+
+  // info — 유형명 기준
+  document.getElementById('modalBadge').textContent = `균형 · ${t.name}`;
+  document.getElementById('modalTitle').textContent = img.title;
+  document.getElementById('modalSub').textContent = t.nameEn;
+  document.getElementById('modalTags').innerHTML = t.keywords.map(k=>`<span class="modal-tag">${k}</span>`).join('');
+
+  // related title
+  const relTitleEl = document.getElementById('modalRelatedTitle');
+  relTitleEl.style.opacity = '0';
+  setTimeout(() => {
+    relTitleEl.textContent = 'Related Images';
+    relTitleEl.style.opacity = '1';
+  }, 150);
+
+  // thumbnails — 같은 유형(t)의 이미지 전체
+  const thumbsEl = document.getElementById('modalThumbs');
+  thumbsEl.innerHTML = '';
+  t.images.forEach((rim, ri) => {
+    const el = document.createElement('div');
+    el.className = 'thumb' + (ri===idx?' active':'');
+    el.innerHTML = `
+      <div class="thumb-img" style="background:${rim.shade};"></div>
+      <div class="thumb-hover-label">
+        <div class="thumb-hover-title">${rim.title}</div>
+        <div class="thumb-hover-code">${rim.code}</div>
+      </div>
+    `;
+    el.addEventListener('click', () => {
+      currentImg = ri;
+      renderModalContent(t, ri);
+      document.getElementById('modalBg').scrollTo({top:0, behavior:'smooth'});
+    });
+    thumbsEl.appendChild(el);
+  });
+}
+
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalBg').addEventListener('click', e => {
+  if(e.target===document.getElementById('modalBg')) closeModal();
+});
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+
+/* ── DROPDOWN ── */
+const titleWrap = document.getElementById('titleWrap');
+const dropdown = document.getElementById('dropdown');
+const underline = document.getElementById('titleUnderline');
+
+function positionDropdown(){
+  const rect = underline.getBoundingClientRect();
+  dropdown.style.top = rect.bottom + 'px';
+  dropdown.style.left = (rect.left + rect.width / 2) + 'px';
+}
+
+titleWrap.addEventListener('click', e => {
+  const isOpen = dropdown.classList.toggle('open');
+  titleWrap.classList.toggle('open', isOpen);
+  if(isOpen) positionDropdown();
+});
+document.addEventListener('click', e => {
+  if(!titleWrap.contains(e.target) && !dropdown.contains(e.target)){
+    dropdown.classList.remove('open');
+    titleWrap.classList.remove('open');
+  }
+});
+window.addEventListener('scroll', () => {
+  if(dropdown.classList.contains('open')) positionDropdown();
+});
+
+/* ── INIT — 전체로 시작 ── */
+selectAll();
+
+/* ── DROPDOWN NAVIGATION ── */
+const DROPDOWN_PAGES = {
+  'BALANCE': 'balance.html',
+  'EMPHASIS': null,
+  'CONTRAST': null,
+  'PROPORTION': null,
+  'RHYTHM': null
+};
+document.querySelectorAll('.dropdown-item').forEach(item => {
+  const enEl = item.querySelector('.dropdown-item-en');
+  if (!enEl) return;
+  const key = enEl.textContent.trim();
+  if (DROPDOWN_PAGES[key] && DROPDOWN_PAGES[key] !== 'balance.html') {
+    item.addEventListener('click', () => { location.href = DROPDOWN_PAGES[key]; });
+  } else if (!DROPDOWN_PAGES[key]) {
+    item.style.opacity = '0.4';
+    item.style.cursor = 'default';
+    item.addEventListener('click', e => {
+      e.stopPropagation();
+      item.querySelector('.dropdown-badge') && (item.querySelector('.dropdown-badge').textContent = '준비중');
+    });
+  }
+});
+</script>
+
+
+</body></html>
